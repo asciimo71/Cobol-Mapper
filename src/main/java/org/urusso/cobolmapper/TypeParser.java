@@ -1,6 +1,6 @@
 package org.urusso.cobolmapper;
 
-import org.apache.commons.lang3.StringUtils;
+import org.urusso.cobolmapper.util.StringUtils;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
