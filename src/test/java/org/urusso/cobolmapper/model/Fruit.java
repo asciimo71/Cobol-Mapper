@@ -6,9 +6,9 @@ import org.urusso.cobolmapper.annotation.CobolSegment;
 import java.util.List;
 
 @Data
-public class State {
-    @CobolSegment(start = 38, end = 48)
+public class Fruit {
+    @CobolSegment(start = 22, end = 32)
     private String name;
-    @CobolSegment(start = 49, end = 52, listElementSize = 1)
-    private List<Integer> stateNumber;
+    @CobolSegment(start = 33, end = 54, listElementSize = 10)
+    private List<String> possibleColors;
 }

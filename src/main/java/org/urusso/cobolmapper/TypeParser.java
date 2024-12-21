@@ -26,6 +26,12 @@ public enum TypeParser {
             return StringUtils.isBlank(subString) ? null : Double.parseDouble(subString);
         }
     },
+    FLOAT(Float.class, float.class) {
+        @Override
+        public Object parse(String subString) {
+            return StringUtils.isBlank(subString) ? null : Float.parseFloat(subString);
+        }
+    },
     BOOLEAN(Boolean.class, boolean.class) {
         @Override
         public Object parse(String subString) {
