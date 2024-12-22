@@ -17,6 +17,7 @@ class CobolMapperTest {
 
         var response = new CobolMapper()
                 .withDateTimeFormatter("yyyy-MM-dd'T'HH:mm:ss").withDateFormatter("yyyy-MM-dd")
+                .withDelimiterSize(1)
                 .map(cobolInput, SampleDto.class);
 
         assertNotNull(response);

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CobolMapper {
+    private int delimiterSize = ";".length();
     private DateTimeFormatter customDateTimeFormatter;
     private DateTimeFormatter customDateFormatter;
 
@@ -76,6 +77,23 @@ public class CobolMapper {
         return this;
     }
 
+    /**
+     * <p>Sets a custom {@link Integer} size for delimiters.</p>
+     * <p>
+     * This size will be used to determine the offset while cycling through the elements.
+     * <p>
+     * If not set, or a {@code null} value is passed, the default {@code 1} will be used instead.
+     * </p>
+     *
+     * @param delimiterSize The custom {@link Integer} size of delimiters present between elements
+     * @return the current {@code CobolMapper} instance with the custom delimiterSize
+     */
+    public CobolMapper withDelimiterSize(Integer delimiterSize) {
+        if (delimiterSize != null)
+            this.delimiterSize = delimiterSize;
+        return this;
+    }
+
     private Object getValue(String cobolInput, Field field, int offset) {
         var annotation = field.getAnnotation(CobolSegment.class);
 
@@ -138,9 +156,8 @@ public class CobolMapper {
             Object segmentObject = getObjectForList(cobolInput, offset, classType);
             list.add(segmentObject);
 
-            //+1 for delimiters like ";"
-            start += size + 1;
-            offset += size + 1;
+            start += size + delimiterSize;
+            offset += size + delimiterSize;
         }
     }
 
@@ -169,7 +186,7 @@ public class CobolMapper {
             Object segment = getSegment(cobolInput, start, segmentEnd, listType);
             list.add(segment);
 
-            start += size + 1; //+1 for delimiters like ";"
+            start += size + delimiterSize;
         }
     }
 

@@ -7,10 +7,22 @@ The use is pretty straightforward:
 ```java
 ResultDto result = new CobolMapper().map(cobolInput, ResultDto.class);
 ```
-You can also set custom **DateTimeFormatter** for date and dateTime values:
+
+You can set a custom **DateTimeFormatter** for date and dateTime values. If not set, the defaults are **DateTimeFormatter.ISO_DATE_TIME** and **DateTimeFormatter.ISO_DATE**:
 ```java
 ResultDto result = new CobolMapper()
         .withDateTimeFormatter("yyyy-MM-dd'T'HH:mm:ss").withDateFormatter("yyyy-MM-dd")
+        .map(cobolInput, ResultDto.class);
+```
+
+You can change the **delimiterSize** by using **withDelimiterSize()** method. If not set, the default is **1**.  
+Remember that the annotation works with the exact starting end ending position of the elements, so if you add a new different delimiter when you were already using another one, you also need to increase/decrease those values. 
+
+```java
+String cobolInput = "mario     ,,rossi     ,,";
+
+ResultDto result = new CobolMapper()
+        .withDelimiterSize(2)
         .map(cobolInput, ResultDto.class);
 ```
 
