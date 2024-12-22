@@ -12,25 +12,25 @@ public class SampleDto {
     @CobolSegment
     private Person person;
 
-    @CobolSegment(start = 22, end = 87, listElementSize = 32)
+    @CobolSegment(startPos = 22, length = 32, listLength = 65)
     private List<Fruit> fruitList;
 
-    @CobolSegment(start = 88, end = 89)
+    @CobolSegment(startPos = 88, length = 1)
     private Integer integerValue;
-    @CobolSegment(start = 88, end = 89)
+    @CobolSegment(startPos = 88, length = 1)
     private Long longValue;
-    @CobolSegment(start = 88, end = 89)
+    @CobolSegment(startPos = 88, length = 1)
     private Double doubleValue;
-    @CobolSegment(start = 88, end = 89)
+    @CobolSegment(startPos = 88, length = 1)
     private Float floatValue;
-    @CobolSegment(start = 88, end = 89)
+    @CobolSegment(startPos = 88, length = 1)
     private Boolean booleanNumberValue;
-    @CobolSegment(start = 90, end = 91)
+    @CobolSegment(startPos = 90, length = 1)
     private Character characterValue;
-    @CobolSegment(start = 92, end = 97)
+    @CobolSegment(startPos = 92, length = 5)
     private Boolean booleanValue;
-    @CobolSegment(start = 98, end = 117)
+    @CobolSegment(startPos = 98, length = 19)
     private LocalDateTime dateTimeValue;
-    @CobolSegment(start = 118, end = 128)
+    @CobolSegment(startPos = 118, length = 10)
     private LocalDate dateValue;
 }

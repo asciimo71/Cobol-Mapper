@@ -3,7 +3,8 @@ package org.urusso.cobolmapper.exception;
 import java.util.Arrays;
 
 public enum CobolExceptionEnum {
-    SIZE_REQUIRED("@CobolSegment: listElementSize param required for lists"),
+    LIST_LENGTH_REQUIRED("@CobolSegment: listLength param required for {0}"),
+    BACIS_PARAMS_REQUIRED("@CobolSegment: startPos and length params are required for {0}"),
     MISSING_CONSTRUCTOR("%s needs a default constructor");
 
     private final String message;

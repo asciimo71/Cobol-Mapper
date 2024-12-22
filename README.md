@@ -15,9 +15,7 @@ ResultDto result = new CobolMapper()
         .map(cobolInput, ResultDto.class);
 ```
 
-You can change the **delimiterSize** by using **withDelimiterSize()** method. If not set, the default is **1**.  
-Remember that the annotation works with the exact starting end ending position of the elements, so if you add a new different delimiter when you were already using another one, you also need to increase/decrease those values. 
-
+You can change the **delimiterSize** by using **withDelimiterSize()** method. If not set, the default is **1**.
 ```java
 String cobolInput = "mario     ,,rossi     ,,";
 
@@ -31,30 +29,30 @@ This annotation is the most important part that needs to be set corrrectly for t
 
 ## Wrapper Objects (String, Integer...) and Complex Objects (Person, Car...)
 <pre>mario     ;rossi     ;</pre>
-- **start**: The starting position to parse the segment and it's always the character after the delimiter. In this case setting it to **0** will start from the **m** in **mario**.
-- **end**: The ending position of the segment and it's always the character before the delimiter. In this case setting it to **9** will read the last space in the **mario** segment before the delimiter **";"**.
+- **startPos**: The starting position of the segment to parse and it's always the character after the delimiter. In this case setting it to **0** will start from the **m** in **mario**.
+- **length**: The segment length excluding the delimiters. In this case is **10**.
 
 ### Example Wrapper Objects
 <pre>mario     ;rossi     ;</pre>
 
 ````java
 public class ResultDto {
-    @CobolSegment(start = 0, end = 10)
+    @CobolSegment(startPos = 0, length = 10)
     String name;
-    @CobolSegment(start = 11, end = 21)
+    @CobolSegment(startPos = 11, length = 10)
     String surname;
 }
 ````
 
 ### Example Complex Objects
-The annotation is used without any parameter set, that's because they need to be specified inside the **Object** itself.
+The annotation is used without any parameter set, that's because they need to be specified inside the **Complex Object** itself.
 <pre>mario     ;rossi     ;</pre>
 
 ````java
 public class Person {
-    @CobolSegment(start = 0, end = 10)
+    @CobolSegment(startPos = 0, length = 10)
     String name;
-    @CobolSegment(start = 11, end = 21)
+    @CobolSegment(startPos = 11, length = 10)
     String surname;
 }
 
@@ -66,23 +64,24 @@ public class ResultDto {
 
 ## Lists of Wrapper Objects (List\<String\>, List\<Integer\>...)
 <pre>red  ;blue ;green;</pre>
-- **start**: The starting position of the list and it's always the character after the delimiter. In this case setting it to **0** will start from the **r** in **red**.
-- **end**: The ending position of the list and it's always the character before the delimiter. In this case setting it to **17** will read the **n** in **green**.
-- **listElementSize**: This is used to set the size of every element of the list. In this case it's **5**.
+- **startPost**: The starting position of the list and it's always the character after the delimiter. In this case setting it to **0** will start from the **r** in **red**.
+- **length**: The segment length excluding the delimiters. In this case is **5** characters long.
+- **listLength**: This is used to set the size of whole list. Always excluding the starting/ending delimiters, but counting the ones in between. So here the listLength is **17**.
 
 ### Example
 <pre>red  ;blue ;green;</pre>
 
 ````java
 public class ResultDto {
-    @CobolSegment(start = 0, end = 17, listElementSize = 5)
+    @CobolSegment(startPos = 0, length = 5, listLength = 17)
     List<String> colorList;
 }
 ````
 
 ## Lists of Complex Objects (List\<Person\>, List\<Car\>...)
 <pre>mario     ;rossi     ;dario     ;verdi     ;</pre>
-- **listElementSize**: In this case the size is calculated from the start to the end of the element. You also need to count all the delimiters in between but never the starting and ending ones. So in this case you count from **m** in **mario** to the last space in **rossi** before the delimiter.  
+- **length**: In this case the **length** is calculated for the whole **Complex Objects** to parse. Also count the **delimiters in between**, but never the starting/ending ones. So **name segment** + **surname segment** + **one delimiter** = **21**.  
+- **listLength**: As above, you need to count the delimiters in between the whole list. So the listLength is **43**.
 **mario** size (**10**) + **rossi** size (**10**) + **delimiter** (**1**) = **21**.
 
 Also the **@CobolSegment** inside the **Complex Objects** need to be always set at the first element position. The mapper will increase the offset while cycling through the elements. 
@@ -92,14 +91,14 @@ Also the **@CobolSegment** inside the **Complex Objects** need to be always set 
 
 ````java
 public class Person {
-    @CobolSegment(start = 0, end = 10)
+    @CobolSegment(startPos = 0, length = 10)
     String name;
-    @CobolSegment(start = 11, end = 21)
+    @CobolSegment(startPos = 11, length = 10)
     String surname;
 }
 
 public class ResultDto {
-    @CobolSegment(start = 0, end = 43, listElementSize = 21)
+    @CobolSegment(startPos = 0, length = 21, listLength = 43)
     List<Person> personList;
 }
 ````
@@ -112,14 +111,14 @@ The **Cobol Mapper** uses **recursion** to go deeper inside the objects until th
 
 ````java
 public class Fruit {
-    @CobolSegment(start = 0, end = 10)
+    @CobolSegment(startPos = 0, length = 10)
     String name;
-    @CobolSegment(start = 11, end = 32, listElementSize = 10)
+    @CobolSegment(startPos = 11, length = 10, listLength = 21)
     List<String> possibleColors;
 }
 
 public class ResultDto {
-    @CobolSegment(start = 0, end = 65, listElementSize = 32)
+    @CobolSegment(startPos = 0, length = 32, listLength = 65)
     List<Fruit> fruitList;
 }
 ````

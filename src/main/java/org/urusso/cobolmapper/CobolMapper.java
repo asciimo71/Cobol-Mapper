@@ -6,6 +6,7 @@ import org.urusso.cobolmapper.exception.CobolExceptionEnum;
 import org.urusso.cobolmapper.exception.CobolMapperException;
 
 import java.lang.reflect.*;
+import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,6 +100,8 @@ public class CobolMapper {
 
         //LIST
         if(List.class.isAssignableFrom(field.getType())) {
+            checkBasicParamsAnnotation(annotation.startPos(), annotation.length(), field);
+            checkListAnnotation(annotation.listLength(), field);
             return getList(cobolInput, annotation, field, offset);
         //OBJECT
         } else if(!isPrimitive(field.getGenericType())) {
@@ -106,13 +109,15 @@ public class CobolMapper {
         }
 
         //PRIMITIVE
-        int start = offset > 0 ? annotation.start() + offset :annotation.start();
-        int end = offset > 0 ? annotation.end() + offset :annotation.end();
+        checkBasicParamsAnnotation(annotation.startPos(), annotation.length(), field);
+        int start = offset > 0 ? annotation.startPos() + offset : annotation.startPos();
+        int end = start + annotation.length();
         return getSegment(cobolInput, start, end, field.getGenericType());
     }
 
     private Object getSegment(String cobolInput, int start, int end, Type type) {
         var segment = cobolInput.substring(start, end).strip();
+
         return parseValue(segment, type);
     }
 
@@ -144,20 +149,19 @@ public class CobolMapper {
     }
 
     private void addObjectToList(String cobolInput, CobolSegment annotation, List<Object> list, Type listType) {
-        int start = annotation.start();
-        int end = annotation.end();
-        int size = annotation.listElementSize();
+        int start = annotation.startPos();
+        int length = annotation.length();
+        int listLength = annotation.listLength();
+        int listEnd = start + listLength;
         var classType = (Class<?>) listType;
 
-        checkSize(size);
-
         int offset = 0;
-        while(start < end) {
+        while(start < listEnd) {
             Object segmentObject = getObjectForList(cobolInput, offset, classType);
             list.add(segmentObject);
 
-            start += size + delimiterSize;
-            offset += size + delimiterSize;
+            start += length + delimiterSize;
+            offset += length + delimiterSize;
         }
     }
 
@@ -175,18 +179,16 @@ public class CobolMapper {
     }
 
     private void addSegmentToList(String cobolInput, CobolSegment annotation, List<Object> list, Type listType, int offset) {
-        int start = offset > 0 ? annotation.start() + offset : annotation.start();
-        int end = offset > 0 ? annotation.end() + offset : annotation.end();
-        int size = annotation.listElementSize();
+        int start = offset > 0 ? annotation.startPos() + offset : annotation.startPos();
+        int length = annotation.length();
+        int listEnd = start + annotation.listLength();
 
-        checkSize(size);
-
-        while(start < end) {
-            int segmentEnd = start + size;
+        while(start < listEnd) {
+            int segmentEnd = start + length;
             Object segment = getSegment(cobolInput, start, segmentEnd, listType);
             list.add(segment);
 
-            start += size + delimiterSize;
+            start += length + delimiterSize;
         }
     }
 
@@ -215,8 +217,21 @@ public class CobolMapper {
         return type.getTypeName().startsWith("java.");
     }
 
-    private static void checkSize(int size) {
-        if(size == -1)
-            throw new CobolMapperException(CobolExceptionEnum.SIZE_REQUIRED);
+    private static void checkListAnnotation(int listLength, Field field) {
+        if(listLength == -1) {
+            String completeFieldName = getCompleteFieldName(field);
+            throw new CobolMapperException(MessageFormat.format(CobolExceptionEnum.LIST_LENGTH_REQUIRED.message(), completeFieldName));
+        }
+    }
+
+    private static void checkBasicParamsAnnotation(int startPos, int length, Field field) {
+        if(startPos == -1 || length == -1) {
+            String completeFieldName = getCompleteFieldName(field);
+            throw new CobolMapperException(MessageFormat.format(CobolExceptionEnum.BACIS_PARAMS_REQUIRED.message(), completeFieldName));
+        }
+    }
+
+    private static String getCompleteFieldName(Field field) {
+        return MessageFormat.format("{0}.{1}", field.getDeclaringClass().toString(), field.getName());
     }
 }

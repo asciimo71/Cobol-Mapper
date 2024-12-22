@@ -5,8 +5,8 @@ import org.urusso.cobolmapper.annotation.CobolSegment;
 
 @Data
 public class Person {
-    @CobolSegment(start = 0, end = 10)
+    @CobolSegment(startPos = 0, length = 10)
     private String name;
-    @CobolSegment(start = 11, end = 21)
+    @CobolSegment(startPos = 11, length = 10)
     private String surname;
 }

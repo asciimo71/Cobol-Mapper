@@ -7,8 +7,8 @@ import java.util.List;
 
 @Data
 public class Fruit {
-    @CobolSegment(start = 22, end = 32)
+    @CobolSegment(startPos = 22, length = 10)
     private String name;
-    @CobolSegment(start = 33, end = 54, listElementSize = 10)
+    @CobolSegment(startPos = 33, length = 10, listLength = 21)
     private List<String> possibleColors;
 }
