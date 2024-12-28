@@ -4,17 +4,19 @@ import lombok.SneakyThrows;
 import org.urusso.cobolmapper.annotation.CobolSegment;
 import org.urusso.cobolmapper.exception.CobolExceptionEnum;
 import org.urusso.cobolmapper.exception.CobolMapperException;
+import org.urusso.cobolmapper.mapper.Mapper;
 
 import java.lang.reflect.*;
 import java.text.MessageFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class CobolMapper {
     private int delimiterSize = ";".length();
     private DateTimeFormatter customDateTimeFormatter;
     private DateTimeFormatter customDateFormatter;
+
+    private static HashMap<Class<?>, Mapper<?>> mapperCache = new HashMap<>();
 
     /**
      * The main method that maps the Cobol {@link String}.
@@ -27,21 +29,17 @@ public class CobolMapper {
      * @return DTO The {@code DTO} mapped starting from the cobolInput {@link String}
      * @param <T> The output {@code DTO}
      */
+
     @SneakyThrows
     public <T> T map(String cobolInput, Class<T> clazz) {
         T rootObject = getInstance(clazz);
 
-        for (Field field : clazz.getDeclaredFields()) {
-            field.setAccessible(true);
-            var isAnnotated = field.isAnnotationPresent(CobolSegment.class);
-
-            if (isAnnotated) {
-                Object value = getValue(cobolInput, field, 0);
-                field.set(rootObject, value);
-            }
+        @SuppressWarnings("unchecked") Mapper<T> mapper = (Mapper<T>) mapperCache.get(clazz);
+        if (Objects.isNull(mapper)) {
+            mapperCache.put(clazz, mapper = new Mapper<>(clazz));
         }
 
-        return rootObject;
+        return mapper.map(cobolInput, rootObject);
     }
 
     /**
@@ -96,23 +94,7 @@ public class CobolMapper {
     }
 
     private Object getValue(String cobolInput, Field field, int offset) {
-        var annotation = field.getAnnotation(CobolSegment.class);
 
-        //LIST
-        if(List.class.isAssignableFrom(field.getType())) {
-            checkBasicParamsAnnotation(annotation.startPos(), annotation.length(), field);
-            checkListAnnotation(annotation.listLength(), field);
-            return getList(cobolInput, annotation, field, offset);
-        //OBJECT
-        } else if(!isPrimitive(field.getGenericType())) {
-            return getObject(cobolInput, field.getType(), offset);
-        }
-
-        //PRIMITIVE
-        checkBasicParamsAnnotation(annotation.startPos(), annotation.length(), field);
-        int start = offset > 0 ? annotation.startPos() + offset : annotation.startPos();
-        int end = start + annotation.length();
-        return getSegment(cobolInput, start, end, field.getGenericType());
     }
 
     private Object getSegment(String cobolInput, int start, int end, Type type) {
@@ -134,20 +116,6 @@ public class CobolMapper {
         return valueObject;
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Object> getList(String cobolInput, CobolSegment annotation, Field field, int offset) {
-        List<Object> list = (List<Object>) getInstance(ArrayList.class);
-
-        Type listType = getListType(field);
-        if(isPrimitive(listType)) {
-            addSegmentToList(cobolInput, annotation, list, listType, offset);
-        } else {
-            addObjectToList(cobolInput, annotation, list, listType);
-        }
-
-        return list;
-    }
-
     private void addObjectToList(String cobolInput, CobolSegment annotation, List<Object> list, Type listType) {
         int start = annotation.startPos();
         int length = annotation.length();
@@ -165,18 +133,7 @@ public class CobolMapper {
         }
     }
 
-    @SneakyThrows
-    private Object getObjectForList(String cobolInput, int offset, Class<?> clazz) {
-        Object valueObject = getInstance(clazz);
-        for(Field childField : clazz.getDeclaredFields()) {
-            childField.setAccessible(true);
 
-            Object value = getValue(cobolInput, childField, offset);
-            childField.set(valueObject, value);
-        }
-
-        return valueObject;
-    }
 
     private void addSegmentToList(String cobolInput, CobolSegment annotation, List<Object> list, Type listType, int offset) {
         int start = offset > 0 ? annotation.startPos() + offset : annotation.startPos();
@@ -209,29 +166,6 @@ public class CobolMapper {
         }
     }
 
-    private static Type getListType(Field field) {
-        return ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
-    }
 
-    private static boolean isPrimitive(Type type) {
-        return type.getTypeName().startsWith("java.");
-    }
 
-    private static void checkListAnnotation(int listLength, Field field) {
-        if(listLength == -1) {
-            String completeFieldName = getCompleteFieldName(field);
-            throw new CobolMapperException(MessageFormat.format(CobolExceptionEnum.LIST_LENGTH_REQUIRED.message(), completeFieldName));
-        }
-    }
-
-    private static void checkBasicParamsAnnotation(int startPos, int length, Field field) {
-        if(startPos == -1 || length == -1) {
-            String completeFieldName = getCompleteFieldName(field);
-            throw new CobolMapperException(MessageFormat.format(CobolExceptionEnum.BACIS_PARAMS_REQUIRED.message(), completeFieldName));
-        }
-    }
-
-    private static String getCompleteFieldName(Field field) {
-        return MessageFormat.format("{0}.{1}", field.getDeclaringClass().toString(), field.getName());
-    }
 }

@@ -87,7 +87,7 @@ public enum TypeParser {
     public static TypeParser getParser(Type valueType) {
         for (TypeParser parser : values()) {
             for (Class<?> type : parser.types) {
-                if (type.equals(valueType)) {
+                if (type == valueType) {
                     return parser;
                 }
             }
